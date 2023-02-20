@@ -5,7 +5,7 @@ inputs:
     description: "An explicit key for versioning the cache"
     required: false
   path:
-    description: "The file or folder to be cached"
+    description: "The file(s) or folder(s) to be cached"
     required: true
 outputs:
   cache-hit:

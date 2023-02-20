@@ -7,14 +7,16 @@ import log from "./lib/log";
 
 async function post(): Promise<void> {
   try {
-    const { cacheDir, targetPath, cachePath } = getVars();
+    const { cacheTargets } = getVars();
 
-    await mkdirP(cacheDir);
-    await mv(targetPath, cachePath, { force: true });
+    for (const target of cacheTargets) {
+      await mkdirP(target.cacheDir);
+      await mv(target.targetPath, target.cachePath, { force: true });
+    }
   } catch (error: unknown) {
     log.trace(error);
     setFailed(isErrorLike(error) ? error.message : `unknown error: ${error}`);
   }
 }
 
-void post();
+post();

@@ -8,21 +8,24 @@ import log from "./lib/log";
 
 async function main(): Promise<void> {
   try {
-    const { cachePath, targetDir, targetPath, options } = getVars();
+    const { cacheTargets } = getVars();
 
-    if (await exists(cachePath)) {
-      await mkdirP(targetDir);
-      await mv(cachePath, targetPath, { force: true });
-      log.info(`Cache found and restored to ${options.path}`);
-      setOutput("cache-hit", true);
-    } else {
-      log.info(`Skipping: cache not found for ${options.path}.`);
-      setOutput("cache-hit", false);
+    let hitCache = false;
+    for (const target of cacheTargets) {
+      if (await exists(target.cachePath)) {
+        await mkdirP(target.targetDir);
+        await mv(target.cachePath, target.targetPath, { force: true });
+        log.info(`Cache found and restored to ${target.origPath}`);
+        hitCache = true;
+      } else {
+        log.info(`Skipping: cache not found for ${target.origPath}.`);
+      }
     }
+    setOutput("cache-hit", hitCache);
   } catch (error: unknown) {
     console.trace(error);
     setFailed(isErrorLike(error) ? error.message : `unknown error: ${error}`);
   }
 }
 
-void main();
+main();

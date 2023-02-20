@@ -1,20 +1,48 @@
-import path from "path";
+import { join, resolve, parse } from "path";
 
 import * as core from "@actions/core";
+import { getInputAsArray } from "./actionUtils";
 
 const { GITHUB_REPOSITORY, RUNNER_TOOL_CACHE } = process.env;
 const CWD = process.cwd();
 
-type Vars = {
-  cacheDir: string;
+enum Inputs {
+  Key = "key",
+  Path = "path",
+}
+
+interface InputOptions {
+  key: string;
+  paths: string[];
+}
+
+interface CacheTarget {
+  origPath: string;
   cachePath: string;
-  options: {
-    key: string;
-    path: string;
-  };
-  targetDir: string;
   targetPath: string;
-};
+  targetDir: string;
+  cacheDir: string;
+}
+
+interface Vars {
+  rootCacheDir: string;
+  options: InputOptions;
+  cacheTargets: CacheTarget[];
+}
+
+function buildCacheTargets(rootCacheDir: string, paths: string[]): CacheTarget[] {
+  return paths.map((path): CacheTarget => {
+    const targetPath = resolve(CWD, path);
+    const cachePath = join(rootCacheDir, path);
+    return {
+      origPath: path,
+      cacheDir: parse(cachePath).dir,
+      cachePath: cachePath,
+      targetPath: targetPath,
+      targetDir: parse(targetPath).dir,
+    };
+  });
+}
 
 export const getVars = (): Vars => {
   if (!RUNNER_TOOL_CACHE) {
@@ -25,25 +53,17 @@ export const getVars = (): Vars => {
     throw new TypeError("Expected GITHUB_REPOSITORY environment variable to be defined.");
   }
 
-  const options = {
-    key: core.getInput("key") || "no-key",
-    path: core.getInput("path"),
+  const options: InputOptions = {
+    key: core.getInput(Inputs.Key) || "no-key",
+    paths: getInputAsArray(Inputs.Path, { required: true }),
   };
 
-  if (!options.path) {
-    throw new TypeError("path is required but was not provided.");
-  }
-
-  const cacheDir = path.join(RUNNER_TOOL_CACHE, GITHUB_REPOSITORY, options.key);
-  const cachePath = path.join(cacheDir, options.path);
-  const targetPath = path.resolve(CWD, options.path);
-  const { dir: targetDir } = path.parse(targetPath);
+  const rootCacheDir = join(RUNNER_TOOL_CACHE, GITHUB_REPOSITORY, options.key);
+  const cacheTargets = buildCacheTargets(rootCacheDir, options.paths);
 
   return {
-    cacheDir,
-    cachePath,
+    rootCacheDir,
     options,
-    targetDir,
-    targetPath,
+    cacheTargets,
   };
 };

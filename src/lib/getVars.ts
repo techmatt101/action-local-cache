@@ -8,7 +8,7 @@ const CWD = process.cwd();
 
 enum Inputs {
   Key = "key",
-  Path = "path",
+  Path = "path"
 }
 
 interface InputOptions {
@@ -39,7 +39,7 @@ function buildCacheTargets(rootCacheDir: string, paths: string[]): CacheTarget[]
       cacheDir: parse(cachePath).dir,
       cachePath: cachePath,
       targetPath: targetPath,
-      targetDir: parse(targetPath).dir,
+      targetDir: parse(targetPath).dir
     };
   });
 }
@@ -55,7 +55,7 @@ export const getVars = (): Vars => {
 
   const options: InputOptions = {
     key: core.getInput(Inputs.Key) || "no-key",
-    paths: getInputAsArray(Inputs.Path, { required: true }),
+    paths: getInputAsArray(Inputs.Path, { required: true })
   };
 
   const rootCacheDir = join(RUNNER_TOOL_CACHE, GITHUB_REPOSITORY, options.key);
@@ -64,6 +64,6 @@ export const getVars = (): Vars => {
   return {
     rootCacheDir,
     options,
-    cacheTargets,
+    cacheTargets
   };
 };

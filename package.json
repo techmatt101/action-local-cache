@@ -8,11 +8,9 @@
     "node": "^16.13.0"
   },
   "scripts": {
-    "all": "npm run format && npm run lint && npm run type-check && npm run pack",
-    "format": "prettier --write **/*",
+    "build": "ncc build src/main.ts --out dist/main && ncc build src/post.ts --out dist/post",
     "lint": "prettier --check --loglevel warn **/*",
-    "pack": "ncc build src/main.ts --out dist/main && ncc build src/post.ts --out dist/post",
-    "type-check": "tsc --noEmit"
+    "format": "prettier --write **/*"
   },
   "repository": {
     "type": "git",

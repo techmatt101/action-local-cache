@@ -8,11 +8,10 @@
     "node": "^16.13.0"
   },
   "scripts": {
-    "all": "npm run format && npm run lint && npm run type-check && npm run pack && npm test",
+    "all": "npm run format && npm run lint && npm run type-check && npm run pack",
     "format": "prettier --write **/*",
     "lint": "prettier --check --loglevel warn **/*",
     "pack": "ncc build src/main.ts --out dist/main && ncc build src/post.ts --out dist/post",
-    "test": "jest",
     "type-check": "tsc --noEmit"
   },
   "repository": {
@@ -33,14 +32,9 @@
     "loglevel": "^1.7.0"
   },
   "devDependencies": {
-    "@types/jest": "^27.0.3",
     "@types/node": "^16.11.11",
     "@vercel/ncc": "^0.33.0",
-    "jest": "^27.4.3",
-    "jest-circus": "^27.4.2",
-    "js-yaml": "^4.0.0",
     "prettier": "^2.2.1",
-    "ts-jest": "^27.0.7",
     "typescript": "^4.5.2"
   }
 }

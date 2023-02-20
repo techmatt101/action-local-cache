@@ -15,7 +15,7 @@ jobs:
 
       - name: Local cache for API dependencies
         id: api-cache
-        uses: MasterworksIO/action-local-cache@1.0.0
+        uses: techmatt101/action-local-cache@1.0.0
         with:
           path: "./api/node_modules/"
           key: "api-dependencies-v1"
@@ -34,10 +34,10 @@ The `key` param is optional and you can use it to invalidate cache.
 
 The first time `action-local-cache` is used in a runner it will take the given path and create a folder structure inside the `$RUNNER_TOOL_CACHE` dir (usually `_work/_tool` inside the runner's workspace), prefixing the user/org name, repo name, and key.
 
-For example, when running the usage example above inside a workflow for the `MasterworksIO/product` repo, this empty folder will be created:
+For example, when running the usage example above inside a workflow for the `techmatt101/product` repo, this empty folder will be created:
 
 ```shell
-~/runner/_work/_tool/MasterworksIO/product/api-dependencies-v1/
+~/runner/_work/_tool/techmatt101/product/api-dependencies-v1/
 ```
 
 Since there's no `api/node_modules/` dir inside, the restore step is skipped and the `cache-hit` output variable will be set to `false`; because of that, the next step which install the dependencies will run.

@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MasterworksIO/action-local-cache.git"
+    "url": "git+https://github.com/techmatt101/action-local-cache.git"
   },
   "keywords": [
     "actions",
@@ -25,7 +25,7 @@
     "self-hosted",
     "runner"
   ],
-  "author": "Masterworks",
+  "author": "techmatt101",
   "license": "MIT",
   "dependencies": {
     "@actions/core": "^1.2.6",

@@ -1,5 +1,6 @@
 import { setFailed } from "@actions/core";
 import { mkdirP, mv } from "@actions/io";
+import { exists } from "@actions/io/lib/io-util";
 
 import { getVars } from "./lib/getVars";
 import { isErrorLike } from "./lib/isErrorLike";
@@ -10,8 +11,12 @@ async function post(): Promise<void> {
     const { cacheTargets } = getVars();
 
     for (const target of cacheTargets) {
-      await mkdirP(target.cacheDir);
-      await mv(target.targetPath, target.cachePath, { force: true });
+      if (await exists(target.targetPath)) {
+        await mkdirP(target.cacheDir);
+        await mv(target.targetPath, target.cachePath, { force: true });
+      } else {
+        log.info(`Skipping: target not found for ${target.targetPath}.`);
+      }
     }
   } catch (error: unknown) {
     log.trace(error);

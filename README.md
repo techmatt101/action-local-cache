@@ -15,7 +15,7 @@ jobs:
 
       - name: Local cache for API dependencies
         id: api-cache
-        uses: techmatt101/action-local-cache@1.0.0
+        uses: techmatt101/action-local-cache@1.2.0
         with:
           path: "./api/node_modules/"
           key: "api-dependencies-v1"

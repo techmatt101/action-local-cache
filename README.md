@@ -4,14 +4,12 @@ This github action allows you to save and restore files across job runs directly
 
 It is intended to be used with runners with persisted storage. Don't use this action if you're using Github-hosted runners or self-hosted runners in ephemeral instances (like docker containers that are launched on demand when a workflow starts and are terminated when the job finishes).
 
-
 ## Usage
 
 ```yaml
 # .github/workflows/my-workflow.yml
 jobs:
   my_job:
-
     steps:
       - uses: actions/checkout@v2
 
@@ -19,8 +17,8 @@ jobs:
         id: api-cache
         uses: MasterworksIO/action-local-cache@1.0.0
         with:
-          path: './api/node_modules/'
-          key: 'api-dependencies-v1'
+          path: "./api/node_modules/"
+          key: "api-dependencies-v1"
 
       - name: Install dependencies
         run: cd api/ && npm install

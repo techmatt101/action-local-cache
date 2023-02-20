@@ -7,11 +7,10 @@
   "engines": {
     "node": "^16.13.0"
   },
-  "prettier": "@masterworks/eslint-config-masterworks/prettier",
   "scripts": {
     "all": "npm run format && npm run lint && npm run type-check && npm run pack && npm test",
-    "format": "prettier --write **/*.ts",
-    "lint": "prettier --check **/*.ts",
+    "format": "prettier --write **/*",
+    "lint": "prettier --check --loglevel warn **/*",
     "pack": "ncc build src/main.ts --out dist/main && ncc build src/post.ts --out dist/post",
     "test": "jest",
     "type-check": "tsc --noEmit"

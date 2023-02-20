@@ -3524,6 +3524,49 @@ exports["default"] = _default;
 
 /***/ }),
 
+/***/ 105:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getInputAsArray = void 0;
+const core = __importStar(__nccwpck_require__(186));
+function getInputAsArray(name, options) {
+    return core
+        .getInput(name, options)
+        .split("\n")
+        .map((s) => s.trim())
+        .filter((x) => x !== "");
+}
+exports.getInputAsArray = getInputAsArray;
+
+
+/***/ }),
+
 /***/ 997:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -3552,15 +3595,31 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getVars = void 0;
-const path_1 = __importDefault(__nccwpck_require__(17));
+const path_1 = __nccwpck_require__(17);
 const core = __importStar(__nccwpck_require__(186));
+const actionUtils_1 = __nccwpck_require__(105);
 const { GITHUB_REPOSITORY, RUNNER_TOOL_CACHE } = process.env;
 const CWD = process.cwd();
+var Inputs;
+(function (Inputs) {
+    Inputs["Key"] = "key";
+    Inputs["Path"] = "path";
+})(Inputs || (Inputs = {}));
+function buildCacheTargets(rootCacheDir, paths) {
+    return paths.map((path) => {
+        const targetPath = (0, path_1.resolve)(CWD, path);
+        const cachePath = (0, path_1.join)(rootCacheDir, path);
+        return {
+            origPath: path,
+            cacheDir: (0, path_1.parse)(cachePath).dir,
+            cachePath: cachePath,
+            targetPath: targetPath,
+            targetDir: (0, path_1.parse)(targetPath).dir
+        };
+    });
+}
 const getVars = () => {
     if (!RUNNER_TOOL_CACHE) {
         throw new TypeError("Expected RUNNER_TOOL_CACHE environment variable to be defined.");
@@ -3569,22 +3628,15 @@ const getVars = () => {
         throw new TypeError("Expected GITHUB_REPOSITORY environment variable to be defined.");
     }
     const options = {
-        key: core.getInput("key") || "no-key",
-        path: core.getInput("path"),
+        key: core.getInput(Inputs.Key) || "no-key",
+        paths: (0, actionUtils_1.getInputAsArray)(Inputs.Path, { required: true })
     };
-    if (!options.path) {
-        throw new TypeError("path is required but was not provided.");
-    }
-    const cacheDir = path_1.default.join(RUNNER_TOOL_CACHE, GITHUB_REPOSITORY, options.key);
-    const cachePath = path_1.default.join(cacheDir, options.path);
-    const targetPath = path_1.default.resolve(CWD, options.path);
-    const { dir: targetDir } = path_1.default.parse(targetPath);
+    const rootCacheDir = (0, path_1.join)(RUNNER_TOOL_CACHE, GITHUB_REPOSITORY, options.key);
+    const cacheTargets = buildCacheTargets(rootCacheDir, options.paths);
     return {
-        cacheDir,
-        cachePath,
+        rootCacheDir,
         options,
-        targetDir,
-        targetPath,
+        cacheTargets
     };
 };
 exports.getVars = getVars;
@@ -3644,21 +3696,29 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core_1 = __nccwpck_require__(186);
 const io_1 = __nccwpck_require__(436);
+const io_util_1 = __nccwpck_require__(962);
 const getVars_1 = __nccwpck_require__(997);
 const isErrorLike_1 = __nccwpck_require__(196);
 const log_1 = __importDefault(__nccwpck_require__(853));
 async function post() {
     try {
-        const { cacheDir, targetPath, cachePath } = (0, getVars_1.getVars)();
-        await (0, io_1.mkdirP)(cacheDir);
-        await (0, io_1.mv)(targetPath, cachePath, { force: true });
+        const { cacheTargets } = (0, getVars_1.getVars)();
+        for (const target of cacheTargets) {
+            if (await (0, io_util_1.exists)(target.targetPath)) {
+                await (0, io_1.mkdirP)(target.cacheDir);
+                await (0, io_1.mv)(target.targetPath, target.cachePath, { force: true });
+            }
+            else {
+                log_1.default.info(`Skipping: target not found for ${target.targetPath}.`);
+            }
+        }
     }
     catch (error) {
         log_1.default.trace(error);
         (0, core_1.setFailed)((0, isErrorLike_1.isErrorLike)(error) ? error.message : `unknown error: ${error}`);
     }
 }
-void post();
+post();
 
 
 /***/ }),

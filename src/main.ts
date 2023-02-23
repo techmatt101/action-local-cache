@@ -1,33 +1,42 @@
 import { setFailed, setOutput } from "@actions/core";
-import { mkdirP, mv } from "@actions/io/";
+import { mv } from "@actions/io";
 import { exists } from "@actions/io/lib/io-util";
 
-import { getOptions } from "./lib/getOptions";
+import { getOptions, Options } from "./lib/getOptions";
 import { isErrorLike } from "./lib/isErrorLike";
+import { buildTargetPaths } from "./lib/pathBuilder";
 import log from "./lib/log";
-import { buildCacheTargets } from "./lib/pathBuilder";
 
 async function main(): Promise<void> {
   try {
-    const options = getOptions();
-    const cacheTargets = buildCacheTargets(options.workingDir, options.cacheDir, options.paths);
-
-    let hitCache = false;
-    for (const target of cacheTargets) {
-      if (await exists(target.cachePath)) {
-        await mkdirP(target.targetDir);
-        await mv(target.cachePath, target.targetPath, { force: true });
-        log.info(`Cache found and restored to ${target.origPath}`);
-        hitCache = true;
-      } else {
-        log.info(`Skipping: cache not found for ${target.origPath}.`);
-      }
-    }
-    setOutput("cache-hit", hitCache);
+    const cacheHit = await moveCache(getOptions());
+    setOutput("cache-hit", cacheHit);
   } catch (error: unknown) {
     console.trace(error);
     setFailed(isErrorLike(error) ? error.message : `unknown error: ${error}`);
   }
+}
+
+async function moveCache(options: Options): Promise<boolean> {
+  if (!await exists(options.cacheDir)) {
+    log.info(`Skipping: no cache found for ${options.cacheKey}`);
+    return false;
+  }
+
+  const cacheTargets = await buildTargetPaths(options.cacheDir, options.workingDir, options.paths);
+
+  let hitCache = false;
+  for (const target of cacheTargets) {
+    if (await exists(target.targetPath)) {
+      await mv(target.targetPath, target.distPath, { force: true });
+      log.info(`Cache restored: ${target.path}`);
+      hitCache = true;
+    } else {
+      log.info(`Cache missing: ${target.path}`);
+    }
+  }
+
+  return hitCache;
 }
 
 main();

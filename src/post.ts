@@ -4,18 +4,19 @@ import { exists } from "@actions/io/lib/io-util";
 
 import { getOptions } from "./lib/getOptions";
 import { isErrorLike } from "./lib/isErrorLike";
+import { buildTargetPaths } from "./lib/pathBuilder";
 import log from "./lib/log";
-import { buildCacheTargets } from "./lib/pathBuilder";
 
 async function post(): Promise<void> {
   try {
     const options = getOptions();
-    const cacheTargets = buildCacheTargets(options.workingDir, options.cacheDir, options.paths);
+    const cacheTargets = await buildTargetPaths(options.workingDir, options.cacheDir, options.paths);
+
+    await mkdirP(options.cacheDir);
 
     for (const target of cacheTargets) {
       if (await exists(target.targetPath)) {
-        await mkdirP(target.cacheDir);
-        await mv(target.targetPath, target.cachePath, { force: true });
+        await mv(target.targetPath, target.distPath, { force: true });
       } else {
         log.info(`Skipping: target not found for ${target.targetPath}.`);
       }

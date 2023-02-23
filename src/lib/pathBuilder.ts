@@ -1,24 +1,23 @@
-import { join, resolve, parse } from "path";
+import * as glob from "@actions/glob";
+import { resolve, relative, join } from "path";
 
 export interface CacheTarget {
-  origPath: string;
-  cachePath: string;
+  path: string;
+  distPath: string;
   targetPath: string;
-  targetDir: string;
-  cacheDir: string;
 }
 
-export function buildCacheTargets(cwd: string, rootCacheDir: string, paths: string[]): CacheTarget[] {
-  return paths.map((path): CacheTarget => {
-    const targetPath = resolve(cwd, path);
-    const cachePath = join(rootCacheDir, path);
-    
+export async function buildTargetPaths(targetDir: string, distDir: string, paths: string[]): Promise<CacheTarget[]> {
+  const globPaths = paths.map(x => join(targetDir, x)).join("\n");
+  const globber = await glob.create(globPaths, { implicitDescendants: false });
+  const matchedPaths = await globber.glob();
+
+  return matchedPaths.map((path) => {
+    const relativePath = relative(targetDir, path);
     return {
-      origPath: path,
-      cacheDir: parse(cachePath).dir,
-      cachePath: cachePath,
-      targetPath: targetPath,
-      targetDir: parse(targetPath).dir
+      path: relativePath,
+      distPath: resolve(distDir, relativePath),
+      targetPath: resolve(targetDir, relativePath)
     };
   });
 }

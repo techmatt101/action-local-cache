@@ -20,7 +20,7 @@ export function getOptions(): Options {
   }
 
   const keyInput = core.getInput("key");
-  const pathInput = core.getInput(core.getInput("path"), { required: true });
+  const pathInput = core.getInput("path", { required: true });
 
   const cacheKey = [...GITHUB_REPOSITORY.split("/"), keyInput].filter((x) => x !== "").join("-");
 

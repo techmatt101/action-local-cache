@@ -1,11 +1,9 @@
-import { setFailed, setOutput } from "@actions/core";
+import { setFailed, setOutput, debug } from "@actions/core";
 import { mv } from "@actions/io";
 import { exists } from "@actions/io/lib/io-util";
 
 import { getOptions, Options } from "./lib/getOptions";
-import { isErrorLike } from "./lib/isErrorLike";
 import { buildTargetPaths } from "./lib/pathBuilder";
-import log from "./lib/log";
 
 async function main(): Promise<void> {
   try {
@@ -13,13 +11,15 @@ async function main(): Promise<void> {
     setOutput("cache-hit", cacheHit);
   } catch (error: unknown) {
     console.trace(error);
-    setFailed(isErrorLike(error) ? error.message : `unknown error: ${error}`);
+    if (error instanceof Error) {
+      setFailed(error.message);
+    }
   }
 }
 
 async function moveCache(options: Options): Promise<boolean> {
-  if (!await exists(options.cacheDir)) {
-    log.info(`Skipping: no cache found for ${options.cacheKey}`);
+  if (!(await exists(options.cacheDir))) {
+    debug(`Skipping: no cache found for ${options.cacheKey}`);
     return false;
   }
 
@@ -29,10 +29,10 @@ async function moveCache(options: Options): Promise<boolean> {
   for (const target of cacheTargets) {
     if (await exists(target.targetPath)) {
       await mv(target.targetPath, target.distPath, { force: true });
-      log.info(`Cache restored: ${target.path}`);
+      debug(`Cache restored: ${target.path}`);
       hitCache = true;
     } else {
-      log.info(`Cache missing: ${target.path}`);
+      debug(`Cache miss: ${target.path}`);
     }
   }
 

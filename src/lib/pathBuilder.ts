@@ -8,7 +8,7 @@ export interface CacheTarget {
 }
 
 export async function buildTargetPaths(targetDir: string, distDir: string, paths: string[]): Promise<CacheTarget[]> {
-  const globPaths = paths.map(x => join(targetDir, x)).join("\n");
+  const globPaths = paths.map((x) => join(targetDir, x)).join("\n");
   const globber = await glob.create(globPaths, { implicitDescendants: false });
   const matchedPaths = await globber.glob();
 

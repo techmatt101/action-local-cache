@@ -1,10 +1,7 @@
-import { join, resolve, parse } from "path";
-
+import { join } from "path";
 import * as core from "@actions/core";
-import { getInputAsArray } from "./actionUtils";
 
-const { GITHUB_REPOSITORY, RUNNER_TOOL_CACHE } = process.env;
-const CWD = process.cwd();
+import { buildCacheTargets, CacheTarget } from "./pathBuilder";
 
 enum Inputs {
   Key = "key",
@@ -16,35 +13,24 @@ interface InputOptions {
   paths: string[];
 }
 
-interface CacheTarget {
-  origPath: string;
-  cachePath: string;
-  targetPath: string;
-  targetDir: string;
-  cacheDir: string;
-}
-
 interface Vars {
   rootCacheDir: string;
   options: InputOptions;
   cacheTargets: CacheTarget[];
 }
 
-function buildCacheTargets(rootCacheDir: string, paths: string[]): CacheTarget[] {
-  return paths.map((path): CacheTarget => {
-    const targetPath = resolve(CWD, path);
-    const cachePath = join(rootCacheDir, path);
-    return {
-      origPath: path,
-      cacheDir: parse(cachePath).dir,
-      cachePath: cachePath,
-      targetPath: targetPath,
-      targetDir: parse(targetPath).dir
-    };
-  });
+function getInputAsArray(name: string, options?: core.InputOptions): string[] {
+  return core
+    .getInput(name, options)
+    .split("\n")
+    .map((s) => s.trim())
+    .filter((x) => x !== "");
 }
 
-export const getVars = (): Vars => {
+export function getVars(): Vars {
+  const { GITHUB_REPOSITORY, RUNNER_TOOL_CACHE } = process.env;
+  const CWD = process.cwd();
+
   if (!RUNNER_TOOL_CACHE) {
     throw new TypeError("Expected RUNNER_TOOL_CACHE environment variable to be defined.");
   }
@@ -60,7 +46,7 @@ export const getVars = (): Vars => {
 
   const cacheKey = [...GITHUB_REPOSITORY.split('/'), options.key].filter(x => x !== "").join('-');
   const rootCacheDir = join(RUNNER_TOOL_CACHE, "local-cache", cacheKey);
-  const cacheTargets = buildCacheTargets(rootCacheDir, options.paths);
+  const cacheTargets = buildCacheTargets(CWD, rootCacheDir, options.paths);
 
   return {
     rootCacheDir,

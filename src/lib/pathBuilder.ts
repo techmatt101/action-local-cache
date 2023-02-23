@@ -12,6 +12,7 @@ export function buildCacheTargets(cwd: string, rootCacheDir: string, paths: stri
   return paths.map((path): CacheTarget => {
     const targetPath = resolve(cwd, path);
     const cachePath = join(rootCacheDir, path);
+    
     return {
       origPath: path,
       cacheDir: parse(cachePath).dir,

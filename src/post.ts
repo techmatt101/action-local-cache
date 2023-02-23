@@ -5,10 +5,12 @@ import { exists } from "@actions/io/lib/io-util";
 import { getVars } from "./lib/getVars";
 import { isErrorLike } from "./lib/isErrorLike";
 import log from "./lib/log";
+import { buildCacheTargets } from "./lib/pathBuilder";
 
 async function post(): Promise<void> {
   try {
-    const { cacheTargets } = getVars();
+    const vars = getVars();
+    const cacheTargets = buildCacheTargets(vars.cwd, vars.rootCacheDir, vars.paths);
 
     for (const target of cacheTargets) {
       if (await exists(target.targetPath)) {

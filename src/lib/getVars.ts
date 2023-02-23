@@ -1,8 +1,6 @@
 import { join } from "path";
 import * as core from "@actions/core";
 
-import { buildCacheTargets, CacheTarget } from "./pathBuilder";
-
 enum Inputs {
   Key = "key",
   Path = "path"
@@ -16,7 +14,8 @@ interface InputOptions {
 interface Vars {
   rootCacheDir: string;
   options: InputOptions;
-  cacheTargets: CacheTarget[];
+  cwd: string;
+  paths: string[];
 }
 
 function getInputAsArray(name: string, options?: core.InputOptions): string[] {
@@ -46,11 +45,11 @@ export function getVars(): Vars {
 
   const cacheKey = [...GITHUB_REPOSITORY.split('/'), options.key].filter(x => x !== "").join('-');
   const rootCacheDir = join(RUNNER_TOOL_CACHE, "local-cache", cacheKey);
-  const cacheTargets = buildCacheTargets(CWD, rootCacheDir, options.paths);
 
   return {
     rootCacheDir,
     options,
-    cacheTargets
+    cwd: CWD,
+    paths: options.paths
   };
 };

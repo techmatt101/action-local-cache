@@ -2,15 +2,15 @@ import { setFailed } from "@actions/core";
 import { mkdirP, mv } from "@actions/io";
 import { exists } from "@actions/io/lib/io-util";
 
-import { getVars } from "./lib/getVars";
+import { getOptions } from "./lib/getOptions";
 import { isErrorLike } from "./lib/isErrorLike";
 import log from "./lib/log";
 import { buildCacheTargets } from "./lib/pathBuilder";
 
 async function post(): Promise<void> {
   try {
-    const vars = getVars();
-    const cacheTargets = buildCacheTargets(vars.cwd, vars.rootCacheDir, vars.paths);
+    const options = getOptions();
+    const cacheTargets = buildCacheTargets(options.workingDir, options.cacheDir, options.paths);
 
     for (const target of cacheTargets) {
       if (await exists(target.targetPath)) {

@@ -54,11 +54,12 @@ export const getVars = (): Vars => {
   }
 
   const options: InputOptions = {
-    key: core.getInput(Inputs.Key) || "no-key",
+    key: core.getInput(Inputs.Key) || "",
     paths: getInputAsArray(Inputs.Path, { required: true })
   };
 
-  const rootCacheDir = join(RUNNER_TOOL_CACHE, GITHUB_REPOSITORY, options.key);
+  const cacheKey = [...GITHUB_REPOSITORY.split('/'), options.key].filter(x => x !== "").join('-');
+  const rootCacheDir = join(RUNNER_TOOL_CACHE, "local-cache", cacheKey);
   const cacheTargets = buildCacheTargets(rootCacheDir, options.paths);
 
   return {

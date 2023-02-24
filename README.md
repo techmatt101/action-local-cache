@@ -2,30 +2,48 @@
 
 This github action allows you to save and restore files across job runs directly in the runner's file system.
 
-It is intended to be used with runners with persisted storage. Don't use this action if you're using Github-hosted runners or self-hosted runners in ephemeral instances (like docker containers that are launched on demand when a workflow starts and are terminated when the job finishes).
+> :warning: It is intended to be used with runners with persisted storage. Don't use this action if you're using Github-hosted runners or self-hosted runners in ephemeral instances (like docker containers that are launched on demand when a workflow starts and are terminated when the job finishes).
 
-## Usage
+## Basic usage
 
 ```yaml
-# .github/workflows/my-workflow.yml
 jobs:
-  my_job:
+  build:
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+
+      - name: Cache node_modules
+        uses: techmatt101/action-local-cache@1.3.0
+        with:
+          path: node_modules
+
+      - name: Install dependencies
+        run: npm install
+```
+
+## Advance usage
+
+```yaml
+jobs:
+  build:
+    steps:
+      - uses: techmatt101/action-local-cache@1.3.0
+        with:
+          key: apps-libs
+          path: |
+            ./apps/*/node_modules
+            ./libs/*/node_modules
 
       - name: Local cache for API dependencies
         id: api-cache
         uses: techmatt101/action-local-cache@1.2.0
         with:
-          path: "./api/node_modules/"
-          key: "api-dependencies-v1"
+          path: ./api/node_modules/
+          key: api-dependencies-v1
 
       - name: Install dependencies
         run: cd api/ && npm install
         if: steps.api-cache.outputs.cache-hit != 'true'
-
-      - name: Do your stuff
-        run: npm run build
 ```
 
 The `key` param is optional and you can use it to invalidate cache.
@@ -34,10 +52,10 @@ The `key` param is optional and you can use it to invalidate cache.
 
 The first time `action-local-cache` is used in a runner it will take the given path and create a folder structure inside the `$RUNNER_TOOL_CACHE` dir (usually `_work/_tool` inside the runner's workspace), prefixing the user/org name, repo name, and key.
 
-For example, when running the usage example above inside a workflow for the `techmatt101/product` repo, this empty folder will be created:
+For example, when running the usage example above inside a workflow for the `owner/repo` repo, this empty folder will be created:
 
 ```shell
-~/runner/_work/_tool/techmatt101/product/api-dependencies-v1/
+~/runner/_work/_tool/local-cache/owner-repo-cachekey/
 ```
 
 Since there's no `api/node_modules/` dir inside, the restore step is skipped and the `cache-hit` output variable will be set to `false`; because of that, the next step which install the dependencies will run.

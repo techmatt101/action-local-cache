@@ -5706,10 +5706,12 @@ function getOptions() {
     }
     const keyInput = core.getInput("key");
     const pathInput = core.getInput("path", { required: true });
+    const remoteDir = core.getInput("network-share-root");
     const cacheKey = [...GITHUB_REPOSITORY.split("/"), keyInput].filter((x) => x !== "").join("-");
     return {
         cacheKey: cacheKey,
         cacheDir: (0, path_1.join)(RUNNER_TOOL_CACHE, "local-cache", cacheKey),
+        remoteDir: remoteDir ? (0, path_1.join)(remoteDir, cacheKey) : null,
         workingDir: process.cwd(),
         paths: pathInput
             .split("\n")
@@ -5942,6 +5944,9 @@ async function moveCache(options) {
     if (!(await (0, io_util_1.exists)(options.cacheDir))) {
         (0, core_1.debug)(`Skipping: no cache found for ${options.cacheKey}`);
         return false;
+    }
+    if (options.remoteDir !== null && !(await (0, io_util_1.exists)(options.cacheDir)) && (await (0, io_util_1.exists)(options.remoteDir))) {
+        await (0, io_1.cp)(options.remoteDir, options.cacheDir);
     }
     const cacheTargets = await (0, pathBuilder_1.buildTargetPaths)(options.cacheDir, options.workingDir, options.paths);
     let hitCache = false;

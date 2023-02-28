@@ -1,5 +1,5 @@
 import { setFailed, setOutput, debug } from "@actions/core";
-import { mv } from "@actions/io";
+import { cp, mv } from "@actions/io";
 import { exists } from "@actions/io/lib/io-util";
 
 import { getOptions, Options } from "./lib/getOptions";
@@ -21,6 +21,10 @@ async function moveCache(options: Options): Promise<boolean> {
   if (!(await exists(options.cacheDir))) {
     debug(`Skipping: no cache found for ${options.cacheKey}`);
     return false;
+  }
+
+  if (options.remoteDir !== null && !(await exists(options.cacheDir)) && (await exists(options.remoteDir))) {
+    await cp(options.remoteDir, options.cacheDir);
   }
 
   const cacheTargets = await buildTargetPaths(options.cacheDir, options.workingDir, options.paths);

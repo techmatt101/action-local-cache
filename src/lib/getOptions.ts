@@ -5,6 +5,7 @@ export interface Options {
   cacheDir: string;
   cacheKey: string;
   workingDir: string;
+  remoteDir: string | null;
   paths: string[];
 }
 
@@ -21,12 +22,14 @@ export function getOptions(): Options {
 
   const keyInput = core.getInput("key");
   const pathInput = core.getInput("path", { required: true });
+  const remoteDir = core.getInput("network-share-root");
 
   const cacheKey = [...GITHUB_REPOSITORY.split("/"), keyInput].filter((x) => x !== "").join("-");
 
   return {
     cacheKey: cacheKey,
     cacheDir: join(RUNNER_TOOL_CACHE, "local-cache", cacheKey),
+    remoteDir: remoteDir ? join(remoteDir, cacheKey) : null,
     workingDir: process.cwd(),
     paths: pathInput
       .split("\n")

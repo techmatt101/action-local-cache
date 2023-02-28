@@ -7,6 +7,9 @@ inputs:
   path:
     description: "The file(s) or folder(s) to be cached"
     required: true
+  network-share-root:
+    description: "The root network folder used for the shared cache between machines"
+    required: false
 outputs:
   cache-hit:
     description: "A boolean value to indicate if cache was found and restored"

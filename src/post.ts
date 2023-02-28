@@ -1,5 +1,5 @@
 import { setFailed, debug } from "@actions/core";
-import { mkdirP, mv } from "@actions/io";
+import { cp, mkdirP, mv } from "@actions/io";
 import { exists } from "@actions/io/lib/io-util";
 
 import { getOptions } from "./lib/getOptions";
@@ -19,6 +19,10 @@ async function post(): Promise<void> {
       } else {
         debug(`Skipping: no matches found for ${target.targetPath}`);
       }
+    }
+
+    if (options.remoteDir !== null && !(await exists(options.remoteDir))) {
+      await cp(options.cacheDir, options.remoteDir);
     }
   } catch (error: unknown) {
     console.trace(error);

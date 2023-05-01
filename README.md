@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Cache node_modules
-        uses: techmatt101/action-local-cache@1.3.0
+        uses: techmatt101/action-local-cache@v1
         with:
           path: node_modules
 
@@ -27,7 +27,7 @@ jobs:
 jobs:
   build:
     steps:
-      - uses: techmatt101/action-local-cache@1.3.0
+      - uses: techmatt101/action-local-cache@v1
         with:
           key: apps-libs
           path: |
@@ -36,7 +36,7 @@ jobs:
 
       - name: Local cache for API dependencies
         id: api-cache
-        uses: techmatt101/action-local-cache@1.2.0
+        uses: techmatt101/action-local-cache@v1
         with:
           path: ./api/node_modules/
           key: api-dependencies-v1

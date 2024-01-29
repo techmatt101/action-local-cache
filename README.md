@@ -10,10 +10,10 @@ This github action allows you to save and restore files across job runs directly
 jobs:
   build:
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Cache node_modules
-        uses: techmatt101/action-local-cache@v1
+        uses: techmatt101/action-local-cache@v2
         with:
           path: node_modules
 
@@ -27,7 +27,7 @@ jobs:
 jobs:
   build:
     steps:
-      - uses: techmatt101/action-local-cache@v1
+      - uses: techmatt101/action-local-cache@v2
         with:
           key: apps-libs
           path: |
@@ -36,7 +36,7 @@ jobs:
 
       - name: Local cache for API dependencies
         id: api-cache
-        uses: techmatt101/action-local-cache@v1
+        uses: techmatt101/action-local-cache@v2
         with:
           path: ./api/node_modules/
           key: api-dependencies-v1

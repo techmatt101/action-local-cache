@@ -1,4 +1,4 @@
-import { setFailed, debug } from "@actions/core";
+import { setFailed, info } from "@actions/core";
 import { cp, mkdirP, mv } from "@actions/io";
 import { exists } from "@actions/io/lib/io-util";
 
@@ -15,9 +15,9 @@ async function post(): Promise<void> {
     for (const target of cacheTargets) {
       if (await exists(target.targetPath)) {
         await mv(target.targetPath, target.distPath, { force: true });
-        debug(`Caching: ${target.targetPath}`);
+        info(`Caching: ${target.targetPath}`);
       } else {
-        debug(`Skipping: no matches found for ${target.targetPath}`);
+        info(`Skipping: no matches found for ${target.targetPath}`);
       }
     }
 
